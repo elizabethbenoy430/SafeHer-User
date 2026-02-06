@@ -78,7 +78,7 @@ class UserHome extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
 
-      // 🔝 APP BAR (NO DRAWER)
+      // 🔝 APP BAR
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -106,7 +106,7 @@ class UserHome extends StatelessWidget {
                 child: Icon(Icons.logout_rounded, color: Colors.grey),
               ),
               onPressed: () {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => const UserLoginPage()),
                 );
@@ -116,7 +116,7 @@ class UserHome extends StatelessWidget {
         ],
       ),
 
-      // 🧍 USER HOME CONTENT
+      // 🧍 HOME CONTENT
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -138,9 +138,9 @@ class UserHome extends StatelessWidget {
                 "AI-powered safety assistance at your fingertips",
                 style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 35),
 
-              // 🚨 SOS
+              // 🚨 SOS BUTTON
               const Center(child: GlowingSOSButton()),
               const SizedBox(height: 12),
               const Center(
@@ -150,10 +150,12 @@ class UserHome extends StatelessWidget {
                     color: Colors.redAccent,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+
+              const SizedBox(height: 35),
 
               featureCard(
                 icon: Icons.psychology,
@@ -196,7 +198,7 @@ class UserHome extends StatelessWidget {
         ),
       ),
 
-      // 🔽 BOTTOM NAVIGATION (PROFILE → MyProfile)
+      // 🔽 BOTTOM NAV
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.black,
         selectedItemColor: const Color(0xFF4CAF50),
@@ -224,7 +226,7 @@ class UserHome extends StatelessWidget {
   }
 }
 
-// 🔴 GLOWING SOS BUTTON
+// 🔴 ATTRACTIVE SOS BUTTON
 class GlowingSOSButton extends StatefulWidget {
   const GlowingSOSButton({super.key});
 
@@ -233,60 +235,93 @@ class GlowingSOSButton extends StatefulWidget {
 }
 
 class _GlowingSOSButtonState extends State<GlowingSOSButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _scaleController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat(reverse: true);
 
-    _animation = Tween<double>(begin: 0, end: 20).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _pulseController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 2))
+          ..repeat();
+
+    _scaleController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 800))
+      ..repeat(reverse: true);
+
+    _pulseAnimation =
+        Tween<double>(begin: 0, end: 25).animate(_pulseController);
+
+    _scaleAnimation =
+        Tween<double>(begin: 1.0, end: 1.07).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _animation,
+      animation: Listenable.merge([_pulseAnimation, _scaleAnimation]),
       builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.redAccent.withOpacity(0.6),
-                blurRadius: _animation.value,
-                spreadRadius: _animation.value / 2,
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.redAccent.withOpacity(0.4),
+                      blurRadius: _pulseAnimation.value,
+                      spreadRadius: _pulseAnimation.value,
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  // TODO: SOS logic
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(45),
+                  elevation: 12,
+                  backgroundColor: Colors.redAccent,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.warning_rounded,
+                        color: Colors.white, size: 36),
+                    SizedBox(height: 4),
+                    Text(
+                      "SOS",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-          child: ElevatedButton(
-            onPressed: () {
-              // TODO: Trigger SOS
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(50),
-              elevation: 8,
-            ),
-            child: const Icon(
-              Icons.warning,
-              size: 55,
-              color: Colors.white,
-            ),
           ),
         );
       },

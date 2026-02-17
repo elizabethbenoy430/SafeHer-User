@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_app/homepage.dart';
+import 'package:user_app/myprofile.dart';
 
 
 Future<void> main() async {
@@ -18,7 +19,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home:UserHome()
+      home:MyProfile()
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:user_app/crime.dart';
+import 'package:user_app/addcrime.dart';
 import 'package:user_app/login.dart';
 import 'package:user_app/myprofile.dart';
 
@@ -269,13 +269,14 @@ class UserHome extends StatelessWidget {
                 context,
                 MaterialPageRoute(builder: (_) => const UserHome()),
               );
-          if (index == 4) {
+            }
+          else if  (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const MyProfile()),
             );
           }
-            }
+            
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),

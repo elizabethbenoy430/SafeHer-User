@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:user_app/crime.dart';
 import 'package:user_app/login.dart';
 import 'package:user_app/myprofile.dart';
 
@@ -249,16 +250,36 @@ class UserHome extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
+
+
+          if (index == 0) {
+            // Already on Home, do nothing
+          } else if (index == 1) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const Crime()),
+              );
+            } else if (index == 2) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserHome()),
+              );
+            } else if (index == 3) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UserHome()),
+              );
           if (index == 4) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const MyProfile()),
             );
           }
+            }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: "Map"),
+          BottomNavigationBarItem(icon: Icon(Icons.local_police), label: "add crime"),
           BottomNavigationBarItem(icon: Icon(Icons.warning), label: "SOS"),
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: "Alerts"),

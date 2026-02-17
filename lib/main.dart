@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:user_app/crime.dart';
+import 'package:user_app/editprofile.dart';
 import 'package:user_app/homepage.dart';
+import 'package:user_app/login.dart';
 import 'package:user_app/myprofile.dart';
+import 'package:user_app/userregistration.dart';
 
 
 Future<void> main() async {
@@ -19,7 +23,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home:MyProfile()
+      debugShowCheckedModeBanner: false,
+      home: Crime()
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditProfile extends StatefulWidget {
   const EditProfile({super.key});
@@ -10,11 +11,48 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   final _formKey = GlobalKey<FormState>();
 
+  final supabase = Supabase.instance.client;
+  bool isUpdating = false;
+
+
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
 
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  // 🔹 LOAD USER DATA FROM SUPABASE
+  Future<void> loadUserData() async {
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      final response = await supabase
+          .from('tbl_user')
+          .select()
+          .eq('user_id', userId)
+          .single();
+
+      setState(() {
+        nameController.text = response['user_name'] ?? "";
+        emailController.text = response['user_email'] ?? "";
+        phoneController.text = response['user_contact'] ?? "";
+        addressController.text = response['user_address'] ?? "";
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      debugPrint("Load error: $e");
+    }
+  }
+
+  // 🔹 INPUT FIELD UI
   Widget inputField({
     required String label,
     required IconData icon,
@@ -41,25 +79,47 @@ class _EditProfileState extends State<EditProfile> {
           icon: Icon(icon, color: Colors.grey),
           labelText: label,
           labelStyle: const TextStyle(color: Colors.grey),
-          errorStyle: const TextStyle(color: Colors.redAccent),
         ),
       ),
     );
   }
 
-  void updateProfile() {
-    if (_formKey.currentState!.validate()) {
-      // All validations passed
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Profile Updated Successfully"),
-          backgroundColor: Color(0xFF4CAF50),
-        ),
-      );
+  // 🔹 UPDATE PROFILE FUNCTION
+  Future<void> updateProfile() async {
+  if (!_formKey.currentState!.validate()) return;
 
-      // TODO: Save to database / Firebase
-    }
+  setState(() => isUpdating = true); // 🔥 LOADER START
+
+  try {
+    final userId = supabase.auth.currentUser!.id;
+
+    await supabase.from('tbl_user').update({
+      'user_name': nameController.text.trim(),
+      'user_email': emailController.text.trim(),
+      'user_contact': phoneController.text.trim(),
+      'user_address': addressController.text.trim(),
+    }).eq('user_id', userId);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Profile Updated Successfully"),
+        backgroundColor: Color(0xFF4CAF50),
+      ),
+    );
+
+    Navigator.pop(context, true); // ✅ RETURN TRUE TO RELOAD PROFILE
+
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Update Failed: $e"),
+        backgroundColor: Colors.red,
+      ),
+    );
+  } finally {
+    if (mounted) setState(() => isUpdating = false); // 🔥 LOADER STOP
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -74,117 +134,109 @@ class _EditProfileState extends State<EditProfile> {
         ),
         title: const Text(
           "Edit Profile",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
+       body: (isLoading || isUpdating)
 
-                const CircleAvatar(
-                  radius: 55,
-                  backgroundColor: Color(0xFF1E1E1E),
-                  child: Icon(Icons.person, size: 50, color: Colors.grey),
-                ),
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+            )
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 30),
 
-                const SizedBox(height: 40),
+                      // PROFILE ICON
+                      
+                      const SizedBox(height: 40),
 
-                inputField(
-                  label: "Name",
-                  icon: Icons.person,
-                  controller: nameController,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return "Name cannot be empty";
-                    }
-                    return null;
-                  },
-                ),
-
-                inputField(
-                  label: "Email",
-                  icon: Icons.email,
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Email is required";
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$')
-                        .hasMatch(value)) {
-                      return "Enter a valid email";
-                    }
-                    return null;
-                  },
-                ),
-
-                inputField(
-                  label: "Contact Number",
-                  icon: Icons.phone,
-                  controller: phoneController,
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Contact number required";
-                    }
-                    if (value.length != 10) {
-                      return "Enter 10 digit number";
-                    }
-                    return null;
-                  },
-                ),
-
-                inputField(
-                  label: "Address",
-                  icon: Icons.location_on,
-                  controller: addressController,
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return "Address cannot be empty";
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 40),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: updateProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                      // NAME
+                      inputField(
+                        label: "Name",
+                        icon: Icons.person,
+                        controller: nameController,
+                        validator: (v) =>
+                            v!.isEmpty ? "Enter name" : null,
                       ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "UPDATE",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
+
+                      // EMAIL
+                      inputField(
+                        label: "Email",
+                        icon: Icons.email,
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (v) {
+                          if (v!.isEmpty) return "Enter email";
+                          if (!RegExp(
+                                  r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}$')
+                              .hasMatch(v)) {
+                            return "Invalid email";
+                          }
+                          return null;
+                        },
                       ),
-                    ),
+
+                      // PHONE
+                      inputField(
+                        label: "Contact Number",
+                        icon: Icons.phone,
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) {
+                          if (v!.isEmpty) return "Enter phone";
+                          if (v.length != 10) return "Enter 10 digit number";
+                          return null;
+                        },
+                      ),
+
+                      // ADDRESS
+                      inputField(
+                        label: "Address",
+                        icon: Icons.location_on,
+                        controller: addressController,
+                        maxLines: 3,
+                        validator: (v) =>
+                            v!.isEmpty ? "Enter address" : null,
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // UPDATE BUTTON
+                      SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: updateProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4CAF50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: const Text(
+                            "UPDATE",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+                    ],
                   ),
                 ),
-
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }

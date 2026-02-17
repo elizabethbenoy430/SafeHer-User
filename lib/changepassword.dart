@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:user_app/userregistration.dart';
 
 class ChangePassword extends StatefulWidget {
   const ChangePassword({super.key});
@@ -7,19 +8,20 @@ class ChangePassword extends StatefulWidget {
   State<ChangePassword> createState() => _ChangePasswordState();
 }
 
-
-
-
 class _ChangePasswordState extends State<ChangePassword> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController oldPasswordController = TextEditingController();
   final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController retypePasswordController = TextEditingController();
+  final TextEditingController retypePasswordController =
+      TextEditingController();
 
   bool _oldObscure = true;
   bool _newObscure = true;
   bool _retypeObscure = true;
+  bool isUpdating = false;
+
+  bool isLoading = true;
 
   // Password validation: Min 8 chars, 1 capital, 1 number
   bool isValidPassword(String password) {
@@ -61,7 +63,10 @@ class _ChangePasswordState extends State<ChangePassword> {
           label,
           icon: icon,
           suffix: IconButton(
-            icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+            icon: Icon(
+              obscureText ? Icons.visibility_off : Icons.visibility,
+              color: Colors.grey,
+            ),
             onPressed: toggle,
           ),
         ),
@@ -71,13 +76,87 @@ class _ChangePasswordState extends State<ChangePassword> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    getDbPassword();
+  }
+
+  Future<String?> getDbPassword() async {
+    final userId = supabase.auth.currentUser!.id;
+
+    final response = await supabase
+        .from('tbl_user')
+        .select('user_password')
+        .eq('user_id', userId)
+        .single();
+    print("DB Password: ${response['user_password']}");
+
+    return response['user_password'];
+  }
+
+  Future<void> changepassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isUpdating = true);
+
+    try {
+      final userId = supabase.auth.currentUser!.id;
+
+      // 🔹 Get password from DB
+      final dbPassword = await getDbPassword();
+
+      // 🔹 Check old password
+      if (dbPassword != oldPasswordController.text.trim()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Old password is incorrect"),
+            backgroundColor: Colors.red,
+          ),
+        );
+  print("HAHAHHAHA");
+        setState(() => isUpdating = false); // ✅ ADD THIS
+        return;
+      }
+
+      // 🔹 Update new password
+      await supabase
+          .from('tbl_user')
+          .update({'user_password': retypePasswordController.text.trim()})
+          .eq('user_id', userId);
+      print("Password updated in DB");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Password Updated Successfully"),
+          backgroundColor: Color(0xFF4CAF50),
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Update Failed: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => isUpdating = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
-        leading: const Icon(Icons.arrow_back_ios, color: Colors.white),
+        leading:IconButton(onPressed: () {
+          
+          Navigator.pop(context);
+        }, icon: const Icon(Icons.arrow_back_ios, color: Colors.white)),
+        
         title: const Text(
           "Change Password",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -94,90 +173,97 @@ class _ChangePasswordState extends State<ChangePassword> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.security, color: Color(0xFF4CAF50), size: 60),
-                const SizedBox(height: 20),
-                const Text(
-                  "Securely update your password",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 30),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.security,
+                    color: Color(0xFF4CAF50),
+                    size: 60,
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    "Securely update your password",
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
 
-                // Password Fields
-                passwordField(
-                  label: "Old Password",
-                  controller: oldPasswordController,
-                  obscureText: _oldObscure,
-                  toggle: () => setState(() => _oldObscure = !_oldObscure),
-                  validator: (value) => value == null || value.isEmpty ? "Old password required" : null,
-                  icon: Icons.lock_outline,
-                ),
-                passwordField(
-                  label: "New Password",
-                  controller: newPasswordController,
-                  obscureText: _newObscure,
-                  toggle: () => setState(() => _newObscure = !_newObscure),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return "New password required";
-                    if (!isValidPassword(value)) return "Min 8 chars, 1 capital & 1 number";
-                    return null;
-                  },
-                  icon: Icons.fiber_new,
-                ),
-                passwordField(
-                  label: "Retype Password",
-                  controller: retypePasswordController,
-                  obscureText: _retypeObscure,
-                  toggle: () => setState(() => _retypeObscure = !_retypeObscure),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return "Please retype password";
-                    if (value != newPasswordController.text) return "Passwords do not match";
-                    return null;
-                  },
-                  icon: Icons.repeat,
-                ),
-
-                const SizedBox(height: 30),
-
-                // Update Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Password changed successfully"),
-                            backgroundColor: Color(0xFF4CAF50),
-                          ),
-                        );
-                      }
+                  // Password Fields
+                  passwordField(
+                    label: "Old Password",
+                    controller: oldPasswordController,
+                    obscureText: _oldObscure,
+                    toggle: () => setState(() => _oldObscure = !_oldObscure),
+                    validator: (value) => value == null || value.isEmpty
+                        ? "Old password required"
+                        : null,
+                    icon: Icons.lock_outline,
+                  ),
+                  passwordField(
+                    label: "New Password",
+                    controller: newPasswordController,
+                    obscureText: _newObscure,
+                    toggle: () => setState(() => _newObscure = !_newObscure),
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return "New password required";
+                      if (!isValidPassword(value))
+                        return "Min 8 chars, 1 capital & 1 number";
+                      return null;
                     },
-                    icon: const Icon(Icons.update, color: Colors.black),
-                    label: const Text(
-                      "UPDATE PASSWORD",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1,
+                    icon: Icons.fiber_new,
+                  ),
+                  passwordField(
+                    label: "Retype Password",
+                    controller: retypePasswordController,
+                    obscureText: _retypeObscure,
+                    toggle: () =>
+                        setState(() => _retypeObscure = !_retypeObscure),
+                    validator: (value) {
+                      if (value == null || value.isEmpty)
+                        return "Please retype password";
+                      if (value != newPasswordController.text)
+                        return "Passwords do not match";
+                      return null;
+                    },
+                    icon: Icons.repeat,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Update Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (!isUpdating) changepassword();
+                      },
+                      icon: const Icon(Icons.update, color: Colors.black),
+                      label: const Text(
+                        "UPDATE PASSWORD",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
                       ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4CAF50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4CAF50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 0,
                       ),
-                      elevation: 0,
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-              ],
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),

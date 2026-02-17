@@ -16,6 +16,7 @@ class _CrimeState extends State<Crime> {
     _detailsController.dispose();
     _fileTypeController.dispose();
     super.dispose();
+    
   }
 
   @override

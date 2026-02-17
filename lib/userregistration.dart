@@ -20,6 +20,7 @@ class _UserRegistrationState extends State<UserRegistration> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   DateTime? _selectedDob;
   bool _obscurePassword = true;
@@ -195,6 +196,13 @@ class _UserRegistrationState extends State<UserRegistration> {
       return;
     }
 
+    // ✅ ADDED CODE (PHOTO MUST)
+    if (_imageFile == null) {
+      _showError("Please insert your photo");
+      return; // STOP REGISTRATION
+    }
+    // ✅ END ADDED CODE
+
     setState(() => _isLoading = true);
 
     try {
@@ -225,14 +233,16 @@ class _UserRegistrationState extends State<UserRegistration> {
         'user_contact': phoneController.text.trim(),
         'user_dob': _selectedDob!.toIso8601String(),
         'user_photo': photoUrl,
-        'user_password': password,
+        'user_password': passwordController.text.trim(),
+        'user_address': addressController.text.trim(),
       });
 
       if (mounted) {
         _showSuccessDialog();
-      Navigator.push(context, MaterialPageRoute(builder: (context) => UserLoginPage(),));
-
-
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => UserLoginPage()),
+        );
       }
     } catch (e) {
       _showError(e.toString());
@@ -253,6 +263,7 @@ class _UserRegistrationState extends State<UserRegistration> {
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
+    addressController.dispose();
     super.dispose();
   }
 
@@ -313,7 +324,7 @@ class _UserRegistrationState extends State<UserRegistration> {
                             _field(nameController, "Full Name", Icons.person),
                             _field(emailController, "Email", Icons.email),
                             _field(phoneController, "Phone Number", Icons.phone),
-                            const SizedBox(height: 16),
+                            _field(addressController, "Address", Icons.home),
                             GestureDetector(
                               onTap: _pickDob,
                               child: Container(

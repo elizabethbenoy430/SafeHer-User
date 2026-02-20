@@ -5,14 +5,16 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_app/homepage.dart';
 import 'package:user_app/userregistration.dart';
 
-class Crime extends StatefulWidget {
-  const Crime({super.key});
+final supabase = Supabase.instance.client;
+
+class AddCrime extends StatefulWidget {
+  const AddCrime({super.key});
 
   @override
-  State<Crime> createState() => _CrimeState();
+  State<AddCrime> createState() => _AddCrimeState();
 }
 
-class _CrimeState extends State<Crime> {
+class _AddCrimeState extends State<AddCrime> {
   final TextEditingController _detailsController = TextEditingController();
   bool _isLoading = false;
 
@@ -27,15 +29,18 @@ class _CrimeState extends State<Crime> {
 
   /// IMAGE PICKER
   Future<void> handleImagePick() async {
-    file_picker.FilePickerResult? result = await file_picker.FilePicker.platform
-        .pickFiles(type: file_picker.FileType.image, withData: true);
+    file_picker.FilePickerResult? result =
+        await file_picker.FilePicker.platform.pickFiles(
+      type: file_picker.FileType.image,
+      withData: true,
+    );
 
     if (result == null) return;
 
     pickedImage = result.files.first;
     imageBytes = pickedImage!.bytes;
 
-    debugPrint("✅ Image picked: ${imageBytes!.length} bytes");
+    debugPrint("Image picked: ${imageBytes!.length} bytes");
     setState(() {});
   }
 
@@ -45,13 +50,11 @@ class _CrimeState extends State<Crime> {
       if (imageBytes == null) return null;
 
       const bucketName = 'CrimeFiles';
-      final String uniqueName = DateTime.now().millisecondsSinceEpoch
-          .toString();
+      final String uniqueName =
+          DateTime.now().millisecondsSinceEpoch.toString();
       final filePath = "crime/${uid}_$uniqueName.${pickedImage!.extension}";
 
-      await supabase.storage
-          .from(bucketName)
-          .uploadBinary(
+      await supabase.storage.from(bucketName).uploadBinary(
             filePath,
             imageBytes!,
             fileOptions: const FileOptions(
@@ -62,7 +65,7 @@ class _CrimeState extends State<Crime> {
 
       return supabase.storage.from(bucketName).getPublicUrl(filePath);
     } catch (e) {
-      debugPrint("❌ Upload error: $e");
+      debugPrint("Upload error: $e");
       return null;
     }
   }
@@ -86,7 +89,7 @@ class _CrimeState extends State<Crime> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Crime reported successfully ✅")),
+          const SnackBar(content: Text("Crime reported successfully")),
         );
 
         Navigator.pushReplacement(
@@ -97,9 +100,8 @@ class _CrimeState extends State<Crime> {
     } catch (e) {
       print("Error adding crime: $e");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -194,14 +196,9 @@ class _CrimeState extends State<Crime> {
                     ),
                   ),
 
-                  const SizedBox(height: 22),
-
-                  // FILE TYPE
-                  
-
                   const SizedBox(height: 30),
 
-                  // 🔥 GESTURE DETECTOR FILE PICKER
+                  // FILE PICKER
                   GestureDetector(
                     onTap: handleImagePick,
                     child: Container(
@@ -215,9 +212,7 @@ class _CrimeState extends State<Crime> {
                       child: Column(
                         children: [
                           Icon(
-                            imageBytes == null
-                                ? Icons.upload_file
-                                : Icons.image,
+                            imageBytes == null ? Icons.upload_file : Icons.image,
                             color: const Color(0xFF4CAF50),
                             size: 40,
                           ),
@@ -225,7 +220,7 @@ class _CrimeState extends State<Crime> {
                           Text(
                             imageBytes == null
                                 ? "Tap to Upload Evidence File"
-                                : "File Selected ✅",
+                                : "File Selected",
                             style: const TextStyle(color: Colors.white),
                           ),
                           if (imageBytes != null)
@@ -255,17 +250,14 @@ class _CrimeState extends State<Crime> {
                               if (_detailsController.text.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text("Enter crime details"),
-                                  ),
+                                      content: Text("Enter crime details")),
                                 );
                                 return;
                               }
                               addCrime();
                             },
-                      icon: const Icon(
-                        Icons.add_circle_outline,
-                        color: Colors.black,
-                      ),
+                      icon: const Icon(Icons.add_circle_outline,
+                          color: Colors.black),
                       label: _isLoading
                           ? const CircularProgressIndicator(color: Colors.black)
                           : const Text(

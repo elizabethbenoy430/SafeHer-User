@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:user_app/addcrime.dart';
 import 'package:user_app/complaint.dart';
+import 'package:user_app/crime.dart';
 import 'package:user_app/login.dart';
 import 'package:user_app/myprofile.dart';
 
@@ -281,7 +282,7 @@ class UserHome extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.local_police), label: "add crime"),
+          BottomNavigationBarItem(icon: Icon(Icons.local_police), label: "Crime"),
           BottomNavigationBarItem(icon: Icon(Icons.warning), label: "SOS"),
           BottomNavigationBarItem(
               icon: Icon(Icons.comment), label: "Complaint"),

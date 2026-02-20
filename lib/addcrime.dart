@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart' as file_picker;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:user_app/homepage.dart';
-import 'package:user_app/userregistration.dart';
 
 final supabase = Supabase.instance.client;
 

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:user_app/homepage.dart';
+import 'package:user_app/userregistration.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
 
 class Complaint extends StatefulWidget {
   const Complaint({super.key});
@@ -11,6 +16,7 @@ class _ComplaintState extends State<Complaint> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -19,12 +25,51 @@ class _ComplaintState extends State<Complaint> {
     super.dispose();
   }
 
+  // 🔥 SAME LOGIC, ONLY FUNCTION NAME FIXED
+  Future<void> addComplaint() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) {
+      print("User not logged in");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await supabase.from('tbl_complaint').insert({
+        "complaint_content": _contentController.text.trim(),
+        "user_id": user.id,
+        "complaint_date": DateTime.now().toIso8601String(),
+        "complaint_title": _titleController.text.trim(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Complaint reported successfully ✅")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserHome()),
+        );
+      }
+    } catch (e) {
+      print("Error adding complaint: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+      print("Error adding complaint: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
 
-      // 🔝 APP BAR
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -44,7 +89,7 @@ class _ComplaintState extends State<Complaint> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              // 🟢 HEADER CARD
+              // HEADER CARD
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -56,8 +101,7 @@ class _ComplaintState extends State<Complaint> {
                 ),
                 child: Column(
                   children: const [
-                    Icon(Icons.report_problem,
-                        color: Colors.black, size: 34),
+                    Icon(Icons.report_problem, color: Colors.black, size: 34),
                     SizedBox(height: 10),
                     Text(
                       "Tell us what happened",
@@ -80,7 +124,7 @@ class _ComplaintState extends State<Complaint> {
 
               const SizedBox(height: 30),
 
-              // 🧾 FORM CARD (CENTERED)
+              // FORM CARD
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(22),
@@ -95,14 +139,12 @@ class _ComplaintState extends State<Complaint> {
                     children: [
                       const Text(
                         "Complaint Title",
-                        textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey),
                       ),
                       const SizedBox(height: 10),
 
                       TextFormField(
                         controller: _titleController,
-                        textAlign: TextAlign.left,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           prefixIcon:
@@ -124,7 +166,6 @@ class _ComplaintState extends State<Complaint> {
 
                       const Text(
                         "Complaint Details",
-                        textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.grey),
                       ),
                       const SizedBox(height: 10),
@@ -132,7 +173,6 @@ class _ComplaintState extends State<Complaint> {
                       TextFormField(
                         controller: _contentController,
                         maxLines: 6,
-                        textAlignVertical: TextAlignVertical.center,
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           prefixIcon: const Icon(Icons.description,
@@ -152,26 +192,31 @@ class _ComplaintState extends State<Complaint> {
 
                       const SizedBox(height: 40),
 
-                      // 🚀 SUBMIT BUTTON
+                      // ✅ SUBMIT BUTTON FIXED
                       SizedBox(
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      "Complaint submitted successfully"),
-                                  backgroundColor: Color(0xFF4CAF50),
-                                ),
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.send, color: Colors.black),
-                          label: const Text(
-                            "SUBMIT COMPLAINT",
-                            style: TextStyle(
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    addComplaint(); // 🔥 FUNCTION CALL
+                                  }
+                                },
+                          icon: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Icon(Icons.send, color: Colors.black),
+                          label: Text(
+                            _isLoading ? "Submitting..." : "SUBMIT COMPLAINT",
+                            style: const TextStyle(
                               color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

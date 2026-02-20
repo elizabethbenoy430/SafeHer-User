@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:user_app/addcrime.dart';
+import 'package:user_app/complaint.dart';
 import 'package:user_app/login.dart';
 import 'package:user_app/myprofile.dart';
 
@@ -267,7 +268,7 @@ class UserHome extends StatelessWidget {
             } else if (index == 3) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const UserHome()),
+                MaterialPageRoute(builder: (_) => const Complaint()),
               );
             }
           else if  (index == 4) {
@@ -283,7 +284,7 @@ class UserHome extends StatelessWidget {
           BottomNavigationBarItem(icon: Icon(Icons.local_police), label: "add crime"),
           BottomNavigationBarItem(icon: Icon(Icons.warning), label: "SOS"),
           BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: "Alerts"),
+              icon: Icon(Icons.comment), label: "Complaint"),
           BottomNavigationBarItem(
               icon: Icon(Icons.person), label: "Profile"),
         ],

@@ -45,8 +45,8 @@ class _CrimeState extends State<Crime> {
           .count();
 
       setState(() {
-        totalReports = totalResponse.count ?? 0;
-        todayReports = todayResponse.count ?? 0;
+        totalReports = totalResponse.count;
+        todayReports = todayResponse.count;
         isLoading = false;
       });
 

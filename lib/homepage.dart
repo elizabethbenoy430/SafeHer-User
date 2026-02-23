@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:user_app/addemergencycontact.dart';
 import 'package:user_app/complaint.dart';
 import 'package:user_app/crime.dart';
 import 'package:user_app/login.dart';
@@ -215,12 +216,20 @@ class UserHome extends StatelessWidget {
                   subtitle: "Share location with trusted contacts",
                 ),
                 const SizedBox(height: 16),
-                featureCard(
-                  icon: Icons.contacts,
-                  title: "Emergency Contacts",
-                  subtitle: "Manage SOS contacts",
-                ),
-                const SizedBox(height: 16),
+              GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const EmergencyContact()),
+    );
+  },
+  child: featureCard(
+    icon: Icons.contacts,
+    title: "Emergency Contacts",
+    subtitle: "Manage SOS contacts",
+  ),
+),
+                 SizedBox(height: 16),
                 featureCard(
                   icon: Icons.report,
                   title: "Incident Reporting",

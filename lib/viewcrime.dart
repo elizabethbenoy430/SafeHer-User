@@ -2,8 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:heif_converter/heif_converter.dart';
-import 'package:user_app/heic.dart'; // Add this
+import 'package:user_app/heic.dart';
 
 class ViewCrime extends StatefulWidget {
   const ViewCrime({super.key});

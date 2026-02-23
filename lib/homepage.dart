@@ -3,6 +3,7 @@ import 'package:user_app/addemergencycontact.dart';
 import 'package:user_app/complaint.dart';
 import 'package:user_app/crime.dart';
 import 'package:user_app/login.dart';
+import 'package:user_app/myemergencycontact.dart';
 import 'package:user_app/myprofile.dart';
 
 class UserHome extends StatelessWidget {
@@ -229,12 +230,20 @@ class UserHome extends StatelessWidget {
     subtitle: "Manage SOS contacts",
   ),
 ),
-                 SizedBox(height: 16),
-                featureCard(
-                  icon: Icons.report,
-                  title: "Incident Reporting",
-                  subtitle: "Report suspicious activities",
-                ),
+ const SizedBox(height: 16),
+                 GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) =>  MyEmergencyContact()),
+    );
+  },
+  child: featureCard(
+    icon: Icons.contacts,
+    title: " view Emergency Contacts",
+    subtitle: "Manage emergency contacts",
+  ),
+),
                 const SizedBox(height: 16),
                 featureCard(
                   icon: Icons.notifications,

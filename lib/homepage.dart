@@ -5,6 +5,7 @@ import 'package:user_app/crime.dart';
 import 'package:user_app/login.dart';
 import 'package:user_app/myemergencycontact.dart';
 import 'package:user_app/myprofile.dart';
+import 'package:user_app/chatbot.dart'; // Ensure this matches your filename
 
 class UserHome extends StatelessWidget {
   const UserHome({super.key});
@@ -22,7 +23,7 @@ class UserHome extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFF181818),
+          color: const Color(0xFF181818).withOpacity(0.9),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: Colors.white.withOpacity(0.08),
@@ -90,15 +91,27 @@ class UserHome extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
 
+      // 🤖 CHATBOT FLOATING BUTTON - PLACED ON THE RIGHT
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF4CAF50),
+        elevation: 8,
+        child: const Icon(Icons.forum_rounded, color: Colors.white),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const Chatbot()),
+          );
+        },
+      ),
+
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black.withOpacity(0.8),
         elevation: 0,
         centerTitle: true,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.shield_rounded,
-                color: Color(0xFF4CAF50), size: 22),
+            Icon(Icons.shield_rounded, color: Color(0xFF4CAF50), size: 22),
             SizedBox(width: 6),
             Text(
               "SafeHer",
@@ -125,193 +138,193 @@ class UserHome extends StatelessWidget {
         ],
       ),
 
-      // 🔥 BACKGROUND GRADIENT ADDED HERE
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF061912), // deep green-black
-              Color(0xFF000000), // pure black
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-
-                const Text(
-                  "Stay Safe",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  "AI-powered safety assistance at your fingertips",
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-
-                const SizedBox(height: 30),
-
-                // SOS ZONE (UNCHANGED)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 30, horizontal: 20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(26),
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.redAccent.withOpacity(0.25),
-                        Colors.transparent,
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    border: Border.all(
-                      color: Colors.redAccent.withOpacity(0.4),
-                    ),
-                  ),
-                  child: Column(
-                    children: const [
-                      GlowingSOSButton(),
-                      SizedBox(height: 14),
-                      Text(
-                        "EMERGENCY SOS",
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        "Press and hold in case of danger",
-                        style:
-                            TextStyle(color: Colors.grey, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 35),
-
-                featureCard(
-                  icon: Icons.psychology,
-                  title: "AI Safety Prediction",
-                  subtitle: "Predict unsafe areas using AI",
-                ),
-                const SizedBox(height: 16),
-                featureCard(
-                  icon: Icons.location_on,
-                  title: "Live Location Sharing",
-                  subtitle: "Share location with trusted contacts",
-                ),
-                const SizedBox(height: 16),
-              GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const EmergencyContact()),
-    );
-  },
-  child: featureCard(
-    icon: Icons.contacts,
-    title: "Emergency Contacts",
-    subtitle: "Manage SOS contacts",
-  ),
-),
- const SizedBox(height: 16),
-                 GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) =>  MyEmergencyContact()),
-    );
-  },
-  child: featureCard(
-    icon: Icons.contacts,
-    title: " view Emergency Contacts",
-    subtitle: "Manage emergency contacts",
-  ),
-),
-                const SizedBox(height: 16),
-                featureCard(
-                  icon: Icons.notifications,
-                  title: "Safety Alerts",
-                  subtitle: "Get real-time alerts",
-                ),
-                const SizedBox(height: 16),
-                featureCard(
-                  icon: Icons.history,
-                  title: "SOS History",
-                  subtitle: "View previous SOS activity",
-                ),
-                const SizedBox(height: 30),
-              ],
+      body: Stack(
+        children: [
+          // Background Image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/bg.png"),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-        ),
+
+          // Dark overlay
+          Container(
+            color: Colors.black.withOpacity(0.75),
+          ),
+
+          // Main Content
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Stay Safe",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    "AI-powered safety assistance at your fingertips",
+                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // 🔴 SOS ZONE
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(26),
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.redAccent.withOpacity(0.25),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Column(
+                      children: const [
+                        GlowingSOSButton(),
+                        SizedBox(height: 14),
+                        Text(
+                          "EMERGENCY SOS",
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          "Press and hold in case of danger",
+                          style: TextStyle(color: Colors.grey, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // 🤖 CHATBOT FEATURE CARD
+                  featureCard(
+                    icon: Icons.smart_toy_outlined,
+                    title: "AI Safety Chatbot",
+                    subtitle: "Instant help and safety guidance",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const Chatbot()),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  featureCard(
+                    icon: Icons.location_on,
+                    title: "Live Location Sharing",
+                    subtitle: "Share location with trusted contacts",
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  featureCard(
+                    icon: Icons.contacts,
+                    title: "Add Emergency Contact",
+                    subtitle: "Register new SOS contacts",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const EmergencyContact()),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  featureCard(
+                    icon: Icons.contact_phone_outlined,
+                    title: "View Emergency Contacts",
+                    subtitle: "Manage emergency contacts",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => MyEmergencyContact()),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  featureCard(
+                    icon: Icons.notifications,
+                    title: "Safety Alerts",
+                    subtitle: "Get real-time alerts",
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  featureCard(
+                    icon: Icons.history,
+                    title: "SOS History",
+                    subtitle: "View previous SOS activity",
+                  ),
+
+                  const SizedBox(height: 80), // Space for FAB
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
 
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0, 
         backgroundColor: Colors.black,
         selectedItemColor: const Color(0xFF4CAF50),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
+          if (index == 0) return;
 
-
-          if (index == 0) {
-            // Already on Home, do nothing
-          } else if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const Crime()),
-              );
-            } else if (index == 2) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UserHome()),
-              );
-            } else if (index == 3) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const Complaint()),
-              );
-            }
-          else if  (index == 4) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyProfile()),
-            );
+          Widget nextPage;
+          switch (index) {
+            case 1: nextPage = const Crime(); break;
+            case 3: nextPage = const Complaint(); break;
+            case 4: nextPage = const MyProfile(); break;
+            default: return;
           }
-            
+
+          Navigator.push(context, MaterialPageRoute(builder: (_) => nextPage));
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.local_police), label: "Crime"),
           BottomNavigationBarItem(icon: Icon(Icons.warning), label: "SOS"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.comment), label: "Complaint"),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person), label: "Profile"),
+          BottomNavigationBarItem(icon: Icon(Icons.comment), label: "Complaint"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
     );
   }
 }
 
-// SOS BUTTON (UNCHANGED)
+// 🔴 SOS BUTTON COMPONENT
 class GlowingSOSButton extends StatefulWidget {
   const GlowingSOSButton({super.key});
 
@@ -327,9 +340,8 @@ class _GlowingSOSButtonState extends State<GlowingSOSButton>
   @override
   void initState() {
     super.initState();
-    _pulse =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2))
-          ..repeat();
+    _pulse = AnimationController(vsync: this, duration: const Duration(seconds: 2))
+      ..repeat();
     _glow = Tween<double>(begin: 12, end: 30).animate(
       CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
     );
@@ -359,7 +371,7 @@ class _GlowingSOSButtonState extends State<GlowingSOSButton>
           ),
           child: ElevatedButton(
             onPressed: () {
-              // TODO: SOS logic
+              // SOS logic
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
@@ -370,8 +382,7 @@ class _GlowingSOSButtonState extends State<GlowingSOSButton>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Icon(Icons.warning_rounded,
-                    color: Colors.white, size: 38),
+                Icon(Icons.warning_rounded, color: Colors.white, size: 38),
                 SizedBox(height: 6),
                 Text(
                   "SOS",
